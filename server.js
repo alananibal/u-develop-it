@@ -24,39 +24,47 @@ const db = mysql.createConnection(
 
 
 
-    // Get all candidates
-    app.get('/api/candidates', (req, res) => {
-        const sql = `SELECT * FROM candidates`;
-    
-        db.query(sql, (err, rows) => {
-        if (err) {
-            res.status(500).json({ error: err.message });
-            return;
-        }
-        res.json({
-            message: 'success',
-            data: rows
-        });
-        });
+      // Get all candidates and their party affiliation
+  app.get('/api/candidates', (req, res) => {
+    const sql = `SELECT candidates.*, parties.name 
+                  AS party_name 
+                  FROM candidates 
+                  LEFT JOIN parties 
+                  ON candidates.party_id = parties.id`;
+                  
+    db.query(sql, (err, rows) => {
+      if (err) {
+        res.status(500).json({ error: err.message });
+        return;
+      }
+      res.json({
+        message: 'success',
+        data: rows
+      });
     });
+  });
 
+  // Get single candidate with party affiliation
+  app.get('/api/candidate/:id', (req, res) => {
+    const sql = `SELECT candidates.*, parties.name 
+                AS party_name 
+                FROM candidates 
+                LEFT JOIN parties 
+                ON candidates.party_id = parties.id 
+                WHERE candidates.id = ?`;
+    const params = [req.params.id];
 
-        // Get a single candidate
-    app.get('/api/candidate/:id', (req, res) => {
-        const sql = `SELECT * FROM candidates WHERE id = ?`;
-        const params = [req.params.id];
-    
-        db.query(sql, params, (err, row) => {
-        if (err) {
-            res.status(400).json({ error: err.message });
-            return;
-        }
-        res.json({
-            message: 'success',
-            data: row
-        });
-        });
+    db.query(sql, params, (err, row) => {
+      if (err) {
+        res.status(400).json({ error: err.message });
+        return;
+      }
+      res.json({
+        message: 'success',
+        data: row
+      });
     });
+  });
 
 
     
